@@ -4,7 +4,7 @@
     "description": "Generate JSON documentation for Svelte components.",
     "main": "src/index.js",
     "scripts": {
-        "lint": "eslint ./**/*.js --fix",
+        "lint": "eslint . --fix",
         "release": "standard-version -a",
         "publish": "git push --follow-tags origin master"
     },
@@ -15,7 +15,7 @@
         "svelte": "^3.38.3"
     },
     "devDependencies": {
-        "@kwangure/eslint-config-svelte": "^0.1.12",
+        "@kwangure/eslint-config-svelte": "^0.1.15",
         "eslint": "^7.30.0",
         "standard-version": "^9.3.0"
     },
