@@ -1,6 +1,7 @@
 export function getDocs(comment) {
     const [{ description, tags, problems }] = comment;
 
+    // TODO: Throw with location/stack-trace info
     if (problems.length > 0) {
         console.error(`Problem parsing documentation: ${problems[0]}`);
     }
@@ -8,14 +9,14 @@ export function getDocs(comment) {
     return {
         description,
         tags: tags.map((tag) => {
-            // TODO: Ignore optional prop in tag
-            const { problems, source: _, ...rest } = tag;
+            const { problems, description, name } = tag;
 
+            // TODO: Throw with location/stack-trace info
             if (problems.length > 0) {
                 console.error(`Problem parsing tag: ${problems[0]}.`);
             }
 
-            return rest;
+            return { description, name };
         }),
     };
 }
