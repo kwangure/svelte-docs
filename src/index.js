@@ -1,16 +1,13 @@
 import * as svelte from "svelte/compiler";
 import { findCustomProperties, parseCssDoc } from "./css.js";
+import { findDescription, findSlots, parseHtmlDoc } from "./html.js";
 import { findExportedVars, parseJsDoc } from "./javscript.js";
-import { findSlots, parseHtmlDoc } from "./html.js";
 import capitalize from "just-capitalize";
 import { compile } from "stylis";
 import { getName } from "./util.js";
 
-// eslint-disable-next-line prefer-named-capture-group
 const styleRegExp = /(?:<\s*style[^>]*>)([^<]+)(?:<\/\s*style\s*>)/;
 
-// TODOS:
-//  - Parse component description
 export default async function parse(options) {
     let { filename, code, preprocess, name } = options;
 
@@ -20,6 +17,7 @@ export default async function parse(options) {
     }
 
     const { html, instance, module } = await svelte.parse(code);
+    const description = findDescription(html);
     const slots = findSlots(html);
     const props = findExportedVars(instance);
     const exports = findExportedVars(module);
@@ -35,6 +33,7 @@ export default async function parse(options) {
     const docs = {
         name: capitalize(getName(name, filename)),
         slots: parseHtmlDoc(slots),
+        description,
         props: parseJsDoc(props),
         exports: parseJsDoc(exports),
         customProperties: parseCssDoc(customProperties),

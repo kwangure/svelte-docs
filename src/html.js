@@ -59,3 +59,23 @@ export function findSlots(ast) {
 
     return slots;
 }
+
+export function findDescription(ast) {
+    let description = "";
+
+    if (ast) {
+        const tag = "@component";
+        svelte.walk(ast, {
+            enter(node) {
+                if (!description && node.type === "Comment") {
+                    const comment = node.data.trim();
+                    if (comment.startsWith(tag)) {
+                        description = comment.substring(tag.length).trim();
+                    }
+                }
+            },
+        });
+    }
+
+    return description;
+}
