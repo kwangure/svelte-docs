@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3-rc.1](https://github.com/kwangure/svelte-docs/compare/v0.0.3-rc.0...v0.0.3-rc.1) (2021-07-26)
+
+
+### Bug Fixes
+
+* expose omitted tag properties ([d1a9339](https://github.com/kwangure/svelte-docs/commit/d1a933998a97aa693544b3a91b4b1c3fb8b2f305))
+
 ### [0.0.3-rc.0](https://github.com/kwangure/svelte-docs/compare/v0.0.2...v0.0.3-rc.0) (2021-07-26)
 
 
