@@ -1,6 +1,6 @@
 {
     "name": "@kwangure/svelte-docs",
-    "version": "0.0.3-rc.1",
+    "version": "0.0.3-rc.2",
     "description": "Generate JSON documentation for Svelte components.",
     "main": "src/index.js",
     "scripts": {
