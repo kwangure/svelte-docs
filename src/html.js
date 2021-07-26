@@ -27,7 +27,8 @@ export function getLeadingComments(index, siblings) {
         const isWhitespace = (/^\s+$/).test(data);
         if (isWhitespace) continue;
         if (type === "Comment") {
-            leadingComments.push(data);
+            // eslint-disable-next-line id-denylist
+            leadingComments.push(data.trim());
         } else {
             break;
         }
@@ -47,11 +48,12 @@ export function findSlots(ast) {
             enter(node, parent, _, index) {
                 if (node.type === "Slot") {
                     const siblings = (parent && parent.children) || [];
-                    slots.push({
-                        name: node.attributes.find((a) => a.name === "name")
-                            || "default",
+                    const name = node.attributes.find((a) => a.name === "name");
+                    const slot = {
+                        name: name?.value[0].data || "default",
                         comments: getLeadingComments(index, siblings),
-                    });
+                    };
+                    slots.push(slot);
                 }
             },
         });
