@@ -1,12 +1,12 @@
 {
     "name": "@kwangure/svelte-docs",
-    "version": "0.0.2",
+    "version": "0.0.3-rc.0",
     "description": "Generate JSON documentation for Svelte components.",
     "main": "src/index.js",
     "scripts": {
         "lint": "eslint . --fix",
-        "release": "standard-version -a",
-        "publish": "git push --follow-tags origin master"
+        "release-candidate": "standard-version -a --prerelease rc && npm publish --tag rc && git push --follow-tags origin master",
+        "release": "standard-version -a && npm publish && git push --follow-tags origin master"
     },
     "dependencies": {
         "comment-parser": "^1.1.5",
