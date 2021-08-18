@@ -1,6 +1,10 @@
+interface CodedError extends Error {
+    code?: number;
+}
+
 export function error(details) {
     const { code, message } = details;
-    const error = new Error(message);
+    const error: CodedError = new Error(message);
     error.code = code;
     throw error;
 }
@@ -17,3 +21,11 @@ export function getName(name, filename) {
 
     return "";
 }
+
+export function capitalize(str) {
+    if (typeof str != 'string') {
+      throw Error('just-capitalize expects a string argument');
+    }
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
