@@ -1,4 +1,4 @@
-import * as comment from "comment-parser";
+import * as comment from "comment-parser/es6";
 import { getDocs } from "./comment.js";
 import { serialize } from "stylis";
 

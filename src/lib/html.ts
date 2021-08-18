@@ -1,6 +1,18 @@
-import * as comment from "comment-parser";
+import * as comment from "comment-parser/es6";
 import * as svelte from "svelte/compiler";
 import { getDocs } from "./comment.js";
+import type { INode } from "svelte/types/compiler/compile/nodes/interfaces";
+import type CustomElementSlot from "svelte/types/compiler/compile/nodes/Slot";
+import type DefaultSlotTemplate from "svelte/types/compiler/compile/nodes/DefaultSlotTemplate";
+import type Element from "svelte/types/compiler/compile/nodes/Element";
+import type Head from "svelte/types/compiler/compile/nodes/Head";
+
+type Slot = Omit<CustomElementSlot, "type"> & {
+    type: "Element"| "Slot",
+};
+
+type SvelteNode = INode | Slot;
+type ParentNode = DefaultSlotTemplate | Element | Head;
 
 export function parseHtmlDoc(slots) {
     return slots.map(function useClosestHtmlDoc(property) {
@@ -45,10 +57,11 @@ export function findSlots(ast) {
     if (ast) {
         svelte.walk(ast, {
             // eslint-disable-next-line max-params
-            enter(node, parent, _, index) {
+            enter(node: SvelteNode, parent: ParentNode, _, index) {
                 if (node.type === "Slot") {
-                    const siblings = (parent && parent.children) || [];
-                    const name = node.attributes.find((a) => a.name === "name");
+                    const siblings = parent?.children || [];
+                    // TODO: Revert typing back to `Attribute`. Waiting for tests.
+                    const name = node.attributes.find((a) => a.name === "name") as any;
                     const slot = {
                         name: name?.value[0].data || "default",
                         comments: getLeadingComments(index, siblings),
@@ -68,7 +81,7 @@ export function findDescription(ast) {
     if (ast) {
         const tag = "@component";
         svelte.walk(ast, {
-            enter(node) {
+            enter(node: SvelteNode) {
                 if (!description && node.type === "Comment") {
                     const comment = node.data.trim();
                     if (comment.startsWith(tag)) {

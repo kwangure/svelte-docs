@@ -1,10 +1,9 @@
 import * as svelte from "svelte/compiler";
-import { findCustomProperties, parseCssDoc } from "./css.js";
-import { findDescription, findSlots, parseHtmlDoc } from "./html.js";
-import { findExportedVars, parseJsDoc } from "./javscript.js";
-import capitalize from "just-capitalize";
+import { findCustomProperties, parseCssDoc } from "./css";
+import { findDescription, findSlots, parseHtmlDoc } from "./html";
+import { findExportedVars, parseJsDoc } from "./javscript";
 import { compile } from "stylis";
-import { getName } from "./util.js";
+import { capitalize, getName } from "./util";
 
 const styleRegExp = /(?:<\s*style[^>]*>)([^<]+)(?:<\/\s*style\s*>)/;
 
