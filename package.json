@@ -2,7 +2,7 @@
     "name": "@kwangure/svelte-docs",
     "version": "0.0.3",
     "description": "Generate JSON documentation for Svelte components.",
-    "main": "src/index.js",
+    "main": "src/lib/index.js",
     "scripts": {
         "lint": "eslint . --fix",
         "release-candidate": "standard-version -a --prerelease rc && npm publish --tag rc && git push --follow-tags origin master",
