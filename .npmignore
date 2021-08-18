@@ -1,2 +1,12 @@
-.eslintrc.cjs
-.gitignore
+# Directories
+.svelte-kit/
+scripts/
+src/
+static/
+test/
+
+# Configs
+.eslint*
+rollup.config.js
+svelte.config.js
+tsconfig.json
