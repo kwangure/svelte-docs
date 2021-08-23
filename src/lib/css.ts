@@ -1,27 +1,41 @@
 import * as comment from "comment-parser/es6";
-import { getDocs } from "./comment.js";
-import { serialize } from "stylis";
+import { COMMENT, DECLARATION, Element, serialize } from "stylis";
+import { Doc, getDocs } from "./comment";
+import { findReverse } from "./util";
 
-export function parseCssDoc(customProperties) {
+type ParsedCustomPropertyDoc = {
+    name: string;
+    comments: string[];
+    value: string;
+}
+
+export type CustomPropertyDoc = {
+    name: string;
+    value: string;
+    cssDoc: Doc;
+}
+
+export function parseCssDoc(
+    customProperties: ParsedCustomPropertyDoc[],
+): CustomPropertyDoc[] {
     return customProperties.map(function useClosestJsDoc(property) {
         const { comments, ...rest } = property;
-        for (let i = comments.length -1; i >= 0; i--) {
-            const value = comments[i];
-            if (value.startsWith("/**")) {
-                rest.cssDoc = getDocs(comment.parse(value));
-                break;
-            }
-        }
-        return rest;
+        const value = findReverse(comments, (c) => c.startsWith("/**"));
+        return Object.assign(rest, {
+            cssDoc: getDocs(comment.parse(value)),
+        });
     });
 }
 
-export function getLeadingComments(index, siblings) {
-    const leadingComments = [];
+export function getLeadingComments(
+    index: number,
+    siblings: Element[],
+): string[] {
+    const leadingComments: string[] = [];
 
     for (let i = index - 1; i >= 0; i--) {
         const previousSibling = siblings[i];
-        if (previousSibling && previousSibling.type === "comm") {
+        if (previousSibling && previousSibling.type === COMMENT) {
             leadingComments.push(previousSibling.value);
         } else {
             break;
@@ -32,28 +46,47 @@ export function getLeadingComments(index, siblings) {
     return leadingComments.reverse();
 }
 
-export function findCustomProperties(ast) {
-    const customProperties = [];
+interface CustomProperty {
+    children: string;
+    root: Element;
+    type: string;
+    length: number;
+    props: string;
+    value: string;
+    return: string;
+}
 
-    serialize(ast, function getCustomProperty(element, index, siblings) {
-        const { children, type, value } = element;
-        const isCustomProperty = type === "decl"
-            && value.startsWith("--");
+function isCustomProperty(element: Element): element is CustomProperty {
+    return element.type === DECLARATION && element.value.startsWith("--");
+}
 
-        if (isCustomProperty) {
-            return customProperties.push({
+export function findCustomProperties(
+    ast: Element[],
+): ParsedCustomPropertyDoc[] {
+    const customProperties: ParsedCustomPropertyDoc[] = [];
+
+    function getCustomProperty(
+        element: Element,
+        index: number,
+        siblings: Element[],
+    ) {
+        if (isCustomProperty(element)) {
+            customProperties.push({
                 name: element.props,
                 value: element.children,
                 comments: getLeadingComments(index, siblings),
             });
+            return;
         }
 
-        if (Array.isArray(children)) {
-            children.forEach((child, i, siblings) => {
+        if (Array.isArray(element.children)) {
+            element.children.forEach((child, i, siblings) => {
                 getCustomProperty(child, i, siblings);
             });
         }
-    });
+    }
+
+    serialize(ast, getCustomProperty);
 
     return customProperties;
 }

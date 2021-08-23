@@ -1,11 +1,13 @@
 import * as comment from "comment-parser/es6";
 import * as svelte from "svelte/compiler";
-import { getDocs } from "./comment.js";
-import type { INode } from "svelte/types/compiler/compile/nodes/interfaces";
+import { Doc, getDocs } from "./comment";
 import type CustomElementSlot from "svelte/types/compiler/compile/nodes/Slot";
-import type DefaultSlotTemplate from "svelte/types/compiler/compile/nodes/DefaultSlotTemplate";
+import type DefaultSlotTemplate from
+    "svelte/types/compiler/compile/nodes/DefaultSlotTemplate";
 import type Element from "svelte/types/compiler/compile/nodes/Element";
 import type Head from "svelte/types/compiler/compile/nodes/Head";
+import type { INode } from "svelte/types/compiler/compile/nodes/interfaces";
+import type { TemplateNode } from "svelte/types/compiler/interfaces";
 
 type Slot = Omit<CustomElementSlot, "type"> & {
     type: "Element"| "Slot",
@@ -14,44 +16,58 @@ type Slot = Omit<CustomElementSlot, "type"> & {
 type SvelteNode = INode | Slot;
 type ParentNode = DefaultSlotTemplate | Element | Head;
 
-export function parseHtmlDoc(slots) {
+type ParsedSlotDoc = {
+    name: string;
+    comments: string[],
+};
+
+export type SlotDoc = {
+    name: string;
+    htmlDoc: Doc,
+}
+
+export function getSlotDocs(slots: ParsedSlotDoc[]): SlotDoc[] {
     return slots.map(function useClosestHtmlDoc(property) {
-        const { comments, ...rest } = property;
+        const { comments, name } = property;
+        let doc;
         for (let i = comments.length -1; i >= 0; i--) {
             const value = comments[i];
             if (value.startsWith("*")) {
-                rest.htmlDoc = getDocs(comment.parse(`/*${value}*/`));
+                doc = {
+                    name,
+                    htmlDoc: getDocs(comment.parse(`/*${value}*/`)),
+                };
                 break;
             }
         }
-        return rest;
+        return doc;
     });
 }
 
-export function getLeadingComments(index, siblings) {
+export function getLeadingComments(
+    index: number,
+    siblings: SvelteNode[],
+): string[] {
     const leadingComments = [];
 
     for (let i = index - 1; i >= 0; i--) {
         const previousSibling = siblings[i];
         if (!previousSibling) break;
-        // eslint-disable-next-line id-denylist
-        const { data, type } = previousSibling;
-        const isWhitespace = (/^\s+$/).test(data);
+
+        // Allow whitespace after comment
+        const isWhitespace = previousSibling.type === "Text"
+            && (/^\s+$/).test(previousSibling.data);
         if (isWhitespace) continue;
-        if (type === "Comment") {
-            // eslint-disable-next-line id-denylist
-            leadingComments.push(data.trim());
-        } else {
-            break;
-        }
+
+        if (previousSibling.type !== "Comment") break;
+        leadingComments.push(previousSibling.data.trim());
     }
 
     // Reverse to maintain CSS cascading order
     return leadingComments.reverse();
 }
 
-
-export function findSlots(ast) {
+export function findSlots(ast: TemplateNode): ParsedSlotDoc[] {
     const slots = [];
 
     if (ast) {
@@ -59,9 +75,11 @@ export function findSlots(ast) {
             // eslint-disable-next-line max-params
             enter(node: SvelteNode, parent: ParentNode, _, index) {
                 if (node.type === "Slot") {
-                    const siblings = parent?.children || [];
+                    const siblings: SvelteNode[] = parent?.children || [];
                     // TODO: Revert typing back to `Attribute`. Waiting for tests.
-                    const name = node.attributes.find((a) => a.name === "name") as any;
+                    const name = node
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .attributes.find((a) => a.name === "name") as any;
                     const slot = {
                         name: name?.value[0].data || "default",
                         comments: getLeadingComments(index, siblings),
@@ -75,7 +93,7 @@ export function findSlots(ast) {
     return slots;
 }
 
-export function findDescription(ast) {
+export function findDescription(ast: TemplateNode): string {
     let description = "";
 
     if (ast) {

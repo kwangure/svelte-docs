@@ -1,13 +1,50 @@
 import * as svelte from "svelte/compiler";
-import { findCustomProperties, parseCssDoc } from "./css";
-import { findDescription, findSlots, parseHtmlDoc } from "./html";
-import { findExportedVars, parseJsDoc } from "./javscript";
-import { compile } from "stylis";
 import { capitalize, getName } from "./util";
+import { CustomPropertyDoc, findCustomProperties, parseCssDoc } from "./css";
+import { ExportDoc, findExportedVars, getJsDoc } from "./javscript";
+import { findDescription, findSlots, getSlotDocs, SlotDoc } from "./html";
+import { compile } from "stylis";
+import type { PreprocessorGroup } from "svelte/types/compiler/preprocess";
 
 const styleRegExp = /(?:<\s*style[^>]*>)([^<]+)(?:<\/\s*style\s*>)/;
 
-export default async function parse(options) {
+export type { CustomPropertyDoc as CSSPropertyDoc, ExportDoc, SlotDoc };
+
+export interface Docs {
+    /** The name of the component */
+    name: string,
+
+    /** The slots in markup */
+    slots: SlotDoc[],
+
+    /** The text description of the component */
+    description: string,
+
+    /** The exported variables in the regular `<script/>` tag */
+    props: ExportDoc[],
+
+    /** The exported variables in the `<script context="module"/>` tag */
+    exports: ExportDoc[],
+
+    /** The defined custom properties in a document */
+    customProperties: CustomPropertyDoc[]
+}
+
+export type ParseOptions = {
+    /** String content of a Svelte file. */
+    code: string;
+
+    /** If `name` is missing, it will be inferred from filename. */
+    filename: string;
+
+    /** Component name to be used in documentation. */
+    name: string;
+
+    /** Options passed to `svelte.preprocess()`. */
+    preprocess: PreprocessorGroup | PreprocessorGroup[];
+}
+
+export default async function parse(options: ParseOptions): Promise<Docs> {
     let { filename, code, preprocess, name } = options;
 
     if (preprocess) {
@@ -29,12 +66,12 @@ export default async function parse(options) {
         customProperties = findCustomProperties(compile(match[1]));
     }
 
-    const docs = {
+    const docs: Docs = {
         name: capitalize(getName(name, filename)),
-        slots: parseHtmlDoc(slots),
+        slots: getSlotDocs(slots),
         description,
-        props: parseJsDoc(props),
-        exports: parseJsDoc(exports),
+        props: getJsDoc(props),
+        exports: getJsDoc(exports),
         customProperties: parseCssDoc(customProperties),
     };
 
