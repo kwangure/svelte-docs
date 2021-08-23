@@ -20,6 +20,7 @@
         "release": "standard-version -a && npm publish && git push --follow-tags origin master"
     },
     "dependencies": {
+        "@types/stylis": "^4.0.1",
         "comment-parser": "^1.1.5",
         "stylis": "^4.0.10",
         "svelte": "^3.38.3"

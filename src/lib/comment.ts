@@ -1,4 +1,16 @@
-export function getDocs(comment) {
+import type { Block } from "comment-parser/es6";
+
+export interface Doc {
+    description: string;
+    tags: Array<{
+        description: string;
+        name: string,
+        tag: string,
+        type: string,
+    }>
+}
+
+export function getDocs(comment: Block[]): Doc {
     const [{ description, tags, problems }] = comment;
 
     // TODO: Throw with location/stack-trace info
