@@ -26,11 +26,11 @@
         "svelte": "^3.38.3"
     },
     "devDependencies": {
-        "@kwangure/eslint-config-svelte": "^0.1.15",
+        "@kwangure/eslint-config-svelte": "^0.1.21",
         "@rollup/plugin-node-resolve": "^13.0.4",
         "@rollup/plugin-typescript": "^8.2.5",
-        "@typescript-eslint/eslint-plugin": "^4.29.2",
-        "eslint": "^7.30.0",
+        "@typescript-eslint/eslint-plugin": "^5.8.1",
+        "eslint": "^8.5.0",
         "fs-extra": "^10.0.0",
         "rollup-plugin-dts": "^3.0.2",
         "standard-version": "^9.3.0"
