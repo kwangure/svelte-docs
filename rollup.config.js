@@ -1,6 +1,8 @@
+import commonjs from "@rollup/plugin-commonjs";
 import dts from "rollup-plugin-dts";
 import { fileURLToPath } from "url";
 import fs from "fs-extra";
+import json from "@rollup/plugin-json";
 import node from "@rollup/plugin-node-resolve";
 import path from "path";
 import typescript from "@rollup/plugin-typescript";
@@ -34,12 +36,14 @@ export default [
         plugins: [
             remove(),
             node(),
+            commonjs(),
+            json(),
             typescript({
                 sourceMap: DEV,
             }),
         ],
         onwarn(warning, warn) {
-            if (warning.code === "THIS_IS_UNDEFINED" && /node_modules\/comment-parser/.test(warning.id)) return;
+            if (warning.code === "THIS_IS_UNDEFINED" && (/node_modules\/comment-parser/).test(warning.id)) return;
             warn(warning);
         },
     },

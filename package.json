@@ -1,6 +1,6 @@
 {
     "name": "@kwangure/svelte-docs",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "description": "Generate JSON documentation for Svelte components.",
     "main": "./dist/index.js",
     "exports": {
@@ -20,18 +20,23 @@
         "release": "standard-version -a && npm publish && git push --follow-tags origin master"
     },
     "dependencies": {
+        "@rollup/plugin-json": "^4.1.0",
         "@types/stylis": "^4.0.1",
         "comment-parser": "^1.1.5",
         "stylis": "^4.0.10",
         "svelte": "^3.38.3"
     },
     "devDependencies": {
-        "@kwangure/eslint-config-svelte": "^0.1.15",
-        "@rollup/plugin-node-resolve": "^13.0.4",
+        "@kwangure/eslint-config-svelte": "^0.1.21",
+        "@rollup/plugin-commonjs": "^21.0.1",
+        "@rollup/plugin-node-resolve": "^13.1.1",
         "@rollup/plugin-typescript": "^8.2.5",
-        "@typescript-eslint/eslint-plugin": "^4.29.2",
-        "eslint": "^7.30.0",
+        "@types/css-tree": "^1.0.7",
+        "@typescript-eslint/eslint-plugin": "^5.8.1",
+        "css-tree": "github:kwangure/csstree",
+        "eslint": "^8.5.0",
         "fs-extra": "^10.0.0",
+        "rollup": "^2.62.0",
         "rollup-plugin-dts": "^3.0.2",
         "standard-version": "^9.3.0"
     },

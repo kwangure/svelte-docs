@@ -3,7 +3,7 @@ import { capitalize, getName } from "./util";
 import { CustomPropertyDoc, findCustomProperties, parseCssDoc } from "./css";
 import { ExportDoc, findExportedVars, getJsDoc } from "./javscript";
 import { findDescription, findSlots, getSlotDocs, SlotDoc } from "./html";
-import { compile } from "stylis";
+import parser from "css-tree/lib/parser";
 import type { PreprocessorGroup } from "svelte/types/compiler/preprocess";
 
 const styleRegExp = /(?:<\s*style[^>]*>)([^<]+)(?:<\/\s*style\s*>)/;
@@ -11,23 +11,23 @@ const styleRegExp = /(?:<\s*style[^>]*>)([^<]+)(?:<\/\s*style\s*>)/;
 export type { CustomPropertyDoc as CSSPropertyDoc, ExportDoc, SlotDoc };
 
 export interface Docs {
-    /** The name of the component */
-    name: string,
-
-    /** The slots in markup */
-    slots: SlotDoc[],
+    /** The defined custom properties in a document */
+    customProperties: CustomPropertyDoc[],
 
     /** The text description of the component */
     description: string,
 
-    /** The exported variables in the regular `<script/>` tag */
-    props: ExportDoc[],
-
     /** The exported variables in the `<script context="module"/>` tag */
     exports: ExportDoc[],
 
-    /** The defined custom properties in a document */
-    customProperties: CustomPropertyDoc[]
+    /** The name of the component */
+    name: string,
+
+    /** The exported variables in the regular `<script/>` tag */
+    props: ExportDoc[],
+
+    /** The slots in markup */
+    slots: SlotDoc[]
 }
 
 export type ParseOptions = {
@@ -58,12 +58,11 @@ export default async function parse(options: ParseOptions): Promise<Docs> {
     const props = findExportedVars(instance);
     const exports = findExportedVars(module);
 
-    // Use different CSS parser since Svelte uses CSSTree which ignores
-    // comments by default
+    // Use different css-tree parser since Svelte's ignores comments
     const match = styleRegExp.exec(code);
     let customProperties = [];
     if (match) {
-        customProperties = findCustomProperties(compile(match[1]));
+        customProperties = findCustomProperties(parser(match[1]));
     }
 
     const docs: Docs = {
