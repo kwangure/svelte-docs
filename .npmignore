@@ -10,3 +10,6 @@ test/
 rollup.config.js
 svelte.config.js
 tsconfig.json
+
+# pack files
+*.tgz
