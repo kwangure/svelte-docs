@@ -17,26 +17,23 @@ type SvelteNode = INode | Slot;
 type ParentNode = DefaultSlotTemplate | Element | Head;
 
 type ParsedSlotDoc = {
-    name: string;
     comments: string[],
+    name: string;
 };
 
 export type SlotDoc = {
-    name: string;
     htmlDoc: Doc,
+    name: string;
 }
 
 export function getSlotDocs(slots: ParsedSlotDoc[]): SlotDoc[] {
     return slots.map(function useClosestHtmlDoc(property) {
         const { comments, name } = property;
-        let doc;
+        const doc = { name, htmlDoc: null };
         for (let i = comments.length -1; i >= 0; i--) {
             const value = comments[i];
             if (value.startsWith("*")) {
-                doc = {
-                    name,
-                    htmlDoc: getDocs(comment.parse(`/*${value}*/`)),
-                };
+                doc.htmlDoc = getDocs(comment.parse(`/*${value}*/`));
                 break;
             }
         }
