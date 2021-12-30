@@ -1,92 +1,107 @@
 import * as comment from "comment-parser/es6";
-import { COMMENT, DECLARATION, Element, serialize } from "stylis";
+import type {
+    Block,
+    CssNode,
+    Declaration,
+    ListItem,
+    PseudoClassSelector,
+    Raw,
+    Rule,
+    StyleSheet,
+    Value,
+} from "css-tree";
 import { Doc, getDocs } from "./comment";
 import { findReverse } from "./util";
-
-type ParsedCustomPropertyDoc = {
-    name: string;
-    comments: string[];
-    value: string;
-}
+import walk from "css-tree/lib/walker";
 
 export type CustomPropertyDoc = {
-    name: string;
-    value: string;
     cssDoc: Doc;
+    property: string;
+    value: string;
 }
 
 export function parseCssDoc(
-    customProperties: ParsedCustomPropertyDoc[],
+    customProperties: CustomProperty[],
 ): CustomPropertyDoc[] {
     return customProperties.map(function useClosestJsDoc(property) {
         const { comments, ...rest } = property;
         const value = findReverse(comments, (c) => c.startsWith("/**"));
         return Object.assign(rest, {
-            cssDoc: getDocs(comment.parse(value)),
+            cssDoc: value ? getDocs(comment.parse(value)) : null,
         });
     });
 }
 
-export function getLeadingComments(
-    index: number,
-    siblings: Element[],
-): string[] {
-    const leadingComments: string[] = [];
-
-    for (let i = index - 1; i >= 0; i--) {
-        const previousSibling = siblings[i];
-        if (previousSibling && previousSibling.type === COMMENT) {
-            leadingComments.push(previousSibling.value);
-        } else {
-            break;
-        }
-    }
-
-    // Reverse to maintain CSS cascading order
-    return leadingComments.reverse();
-}
-
 interface CustomProperty {
-    children: string;
-    root: Element;
-    type: string;
-    length: number;
-    props: string;
+    comments: string[];
+    property: string;
     value: string;
-    return: string;
 }
 
-function isCustomProperty(element: Element): element is CustomProperty {
-    return element.type === DECLARATION && element.value.startsWith("--");
+function isRule(node: CssNode): node is Rule {
+    return node.type === "Rule";
 }
 
-export function findCustomProperties(
-    ast: Element[],
-): ParsedCustomPropertyDoc[] {
-    const customProperties: ParsedCustomPropertyDoc[] = [];
+function isPseudoSelector(node: CssNode): node is PseudoClassSelector {
+    return node.type === "PseudoClassSelector";
+}
 
-    function getCustomProperty(
-        element: Element,
-        index: number,
-        siblings: Element[],
-    ) {
-        if (isCustomProperty(element)) {
-            customProperties.push({
-                name: element.props,
-                value: element.children,
-                comments: getLeadingComments(index, siblings),
-            });
-            return;
-        }
+function isDeclaration(node: CssNode): node is Declaration {
+    return node.type === "Declaration";
+}
 
-        if (Array.isArray(element.children)) {
-            element.children.forEach((child, i, siblings) => {
-                getCustomProperty(child, i, siblings);
-            });
+function hasCustomPropertyExport(prelude) {
+    let hasExport = false;
+    walk(prelude, (node) => {
+        if (isPseudoSelector(node) && (node.name === "root" || node.name === "host")) {
+            hasExport = true;
         }
+    });
+    return hasExport;
+}
+
+function getValue(node: Value | Raw): string {
+    if (node.type === "Raw") {
+        return node.value;
+    }
+    // TODO: Do we need to handle `Value`?
+    return "";
+}
+
+function getComments(node: ListItem<CssNode>) {
+    const comments: string[] = [];
+
+    while (node !== null && node.data.type === "Comment") {
+        comments.push(`/*${node.data.value}*/`);
+        node = node.prev;
     }
 
-    serialize(ast, getCustomProperty);
+    return comments;
+}
+
+function getExports(block: Block): CustomProperty[] {
+    const customProperties: CustomProperty[] = [];
+    walk(block, (node, parent: ListItem<CssNode>) => {
+        if (isDeclaration(node) && node.property.startsWith("--")) {
+            customProperties.push({
+                property: node.property,
+                value: getValue(node.value),
+                comments: getComments(parent.prev),
+            });
+        }
+    });
+    return customProperties;
+}
+
+export function findCustomProperties(ast: StyleSheet): CustomProperty[] {
+    const customProperties: CustomProperty[] = [];
+
+    walk(ast, (node: CssNode) => {
+        if (!isRule(node)) return;
+        if (!hasCustomPropertyExport(node.prelude)) return;
+
+        Object.assign(customProperties, getExports(node.block));
+    });
 
     return customProperties;
 }
