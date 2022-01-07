@@ -23,6 +23,7 @@
         "@rollup/plugin-json": "^4.1.0",
         "@types/stylis": "^4.0.1",
         "comment-parser": "^1.1.5",
+        "magic-string": "^0.25.7",
         "stylis": "^4.0.10",
         "svelte": "^3.38.3"
     },
