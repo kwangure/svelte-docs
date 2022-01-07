@@ -38,6 +38,12 @@ interface CustomProperty {
     value: string;
 }
 
+interface CustomPropertyDetails {
+    customProperties: CustomProperty[],
+    end?: number;
+    start?: number;
+}
+
 function isRule(node: CssNode): node is Rule {
     return node.type === "Rule";
 }
@@ -50,10 +56,11 @@ function isDeclaration(node: CssNode): node is Declaration {
     return node.type === "Declaration";
 }
 
+const allowed_pseudoselectors = new Set(["root", "host", "export"]);
 function hasCustomPropertyExport(prelude) {
     let hasExport = false;
     walk(prelude, (node) => {
-        if (isPseudoSelector(node) && (node.name === "root" || node.name === "host")) {
+        if (isPseudoSelector(node) && allowed_pseudoselectors.has(node.name)) {
             hasExport = true;
         }
     });
@@ -93,15 +100,21 @@ function getExports(block: Block): CustomProperty[] {
     return customProperties;
 }
 
-export function findCustomProperties(ast: StyleSheet): CustomProperty[] {
-    const customProperties: CustomProperty[] = [];
+export function findCustomProperties(ast: StyleSheet): CustomPropertyDetails {
+    const result: CustomPropertyDetails = {
+        customProperties: [],
+    };
 
     walk(ast, (node: CssNode) => {
         if (!isRule(node)) return;
         if (!hasCustomPropertyExport(node.prelude)) return;
 
-        Object.assign(customProperties, getExports(node.block));
+        Object.assign(result, {
+            customProperties: getExports(node.block),
+            end: node.loc.end.offset,
+            start: node.loc.start.offset,
+        });
     });
 
-    return customProperties;
+    return result;
 }

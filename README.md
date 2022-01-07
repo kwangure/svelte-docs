@@ -1,5 +1,5 @@
 # Svelte Documentation Parser
-Generate JSON documentation for Svelte components.
+A preprocessor to generate JSON documentation for Svelte components.
 
 ## Install
 ```bash
@@ -8,39 +8,15 @@ npm install @kwangure/svelte-docs
 
 ## Usage
 ```javascript
-import fs from "fs";
-import { parse } from "@kwangure/svelte-docs";
-import path from "path";
-
-const filename = path.resolve(process.cwd(), "./button.svelte");
-const code = fs.readFileSync(filename, { encoding: "utf-8" });
-
-const docs = await parse({
-    name: "Button",
-    filename,
-    code,
-    preprocess: sveltePreprocess({
-        postcss: {
-            plugins: [require('autoprefixer')()]
-        }
-    }),
-});
-
-console.log(docs);
-
+// svelte.config.js
+import docs from "@kwangure/svelte-docs";
+export default {
+    preprocess: [
+        ...,
+        docs, // Expects a valid Svelte file. Put as last preprocessor.
+    ]
+}
 ```
-
-## Parse options
-
-The `code` option is required.
-
-| Option                     | Description                                            |
-|----------------------------|--------------------------------------------------------|
-| **name**                   | Name to be included in documentation.                  |
-| **filename**               | If name is missing, it will be inferred from filename. |
-| **code**                   | String content of a Svelte file.                       |
-| **preprocess**             | Options passed to `svelte.preprocess()`.               |
-<br>
 
 ## Output
 

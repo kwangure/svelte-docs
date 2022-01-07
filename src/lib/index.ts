@@ -3,6 +3,7 @@ import { capitalize, getName } from "./util";
 import { CustomPropertyDoc, findCustomProperties, parseCssDoc } from "./css";
 import { ExportDoc, findExportedVars, getJsDoc } from "./javscript";
 import { findDescription, findSlots, getSlotDocs, SlotDoc } from "./html";
+import MagicString from "magic-string";
 import parser from "css-tree/lib/parser";
 import type { PreprocessorGroup } from "svelte/types/compiler/preprocess";
 
@@ -30,49 +31,62 @@ export interface Docs {
     slots: SlotDoc[]
 }
 
-export type ParseOptions = {
-    /** String content of a Svelte file. */
-    code: string;
+export default function parse(): PreprocessorGroup {
+    const s = JSON.stringify;
+    return {
+        markup(input) {
+            const docs_regex = /export +const +docs *= *true *;*/;
+            const { filename, content } = input;
 
-    /** If `name` is missing, it will be inferred from filename. */
-    filename: string;
+            const { html, instance, module, css } = svelte.parse(content);
+            if (!module) return;
 
-    /** Component name to be used in documentation. */
-    name: string;
+            const magic_string = new MagicString(content);
+            const module_string = magic_string.slice(module.start, module.end);
+            const docs_variable = docs_regex.exec(module_string);
+            if (!docs_variable) return;
 
-    /** Options passed to `svelte.preprocess()`. */
-    preprocess: PreprocessorGroup | PreprocessorGroup[];
-}
+            const description = findDescription(html);
+            const slots = findSlots(html);
+            const props = findExportedVars(instance);
+            const exports = findExportedVars(module);
 
-export default async function parse(options: ParseOptions): Promise<Docs> {
-    let { filename, code, preprocess, name } = options;
+            let customProperties = [];
+            if (css) {
+                const css_string = magic_string
+                    .slice(css.content.start, css.content.end);
+                // Use different css-tree parser since Svelte's ignores comments
+                const ast = parser(css_string, { positions: true });
+                const cssExport = findCustomProperties(ast);
+                if (cssExport.start !== undefined) {
+                    ({ customProperties } = cssExport);
+                    const export_start = css.content.start + cssExport.start;
+                    const export_end = css.content.start + cssExport.end;
+                    magic_string.remove(export_start, export_end);
+                }
+            }
 
-    if (preprocess) {
-        ({ code } = await svelte
-            .preprocess(code, preprocess, { filename }));
-    }
+            const docs: Docs = {
+                name: capitalize(getName(filename)),
+                slots: getSlotDocs(slots),
+                description,
+                props: getJsDoc(props),
+                exports: getJsDoc(exports),
+                customProperties: parseCssDoc(customProperties),
+            };
 
-    const { html, instance, module } = await svelte.parse(code);
-    const description = findDescription(html);
-    const slots = findSlots(html);
-    const props = findExportedVars(instance);
-    const exports = findExportedVars(module);
+            // Stringify twice to escape strings inside first string.
+            const docs_string = `export const docs = JSON.parse(${s(s(docs))});`;
 
-    // Use different css-tree parser since Svelte's ignores comments
-    const match = styleRegExp.exec(code);
-    let customProperties = [];
-    if (match) {
-        customProperties = findCustomProperties(parser(match[1]));
-    }
+            const { 0: { length }, index } = docs_variable;
+            const docs_start = module.start + index;
+            const docs_end = module.start + index + length;
+            magic_string.overwrite(docs_start, docs_end, docs_string);
 
-    const docs: Docs = {
-        name: capitalize(getName(name, filename)),
-        slots: getSlotDocs(slots),
-        description,
-        props: getJsDoc(props),
-        exports: getJsDoc(exports),
-        customProperties: parseCssDoc(customProperties),
+            return {
+                code: magic_string.toString(),
+                map: magic_string.generateMap(),
+            };
+        },
     };
-
-    return docs;
 }

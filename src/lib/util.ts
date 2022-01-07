@@ -14,9 +14,7 @@ export function error(details: Details): never {
     throw error;
 }
 
-export function getName(name:string, filename: string): string {
-    if (name) return name;
-
+export function getName(filename: string): string {
     if (filename) {
         return filename.substring(
             filename.lastIndexOf("/") + 1,
