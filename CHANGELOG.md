@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/kwangure/svelte-docs/compare/v0.2.0...v0.3.0) (2022-01-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* make svelte-docs a preprocessor
+
+### Features
+
+* make svelte-docs a preprocessor ([8b9018e](https://github.com/kwangure/svelte-docs/commit/8b9018ee60c3324f58136d40f43b242bd0b4479e))
+
 ## [0.2.0](https://github.com/kwangure/svelte-docs/compare/v0.0.3...v0.2.0) (2021-12-30)
 
 
