@@ -41,6 +41,7 @@ interface CustomProperty {
 interface CustomPropertyDetails {
     customProperties: CustomProperty[],
     end?: number;
+    selector?: string;
     start?: number;
 }
 
@@ -57,14 +58,14 @@ function isDeclaration(node: CssNode): node is Declaration {
 }
 
 const allowed_pseudoselectors = new Set(["root", "host", "export"]);
-function hasCustomPropertyExport(prelude) {
-    let hasExport = false;
+function getCustomPropertyExport(prelude) {
+    let exportSelector = "";
     walk(prelude, (node) => {
         if (isPseudoSelector(node) && allowed_pseudoselectors.has(node.name)) {
-            hasExport = true;
+            exportSelector = node.name;
         }
     });
-    return hasExport;
+    return exportSelector;
 }
 
 function getValue(node: Value | Raw): string {
@@ -107,9 +108,11 @@ export function findCustomProperties(ast: StyleSheet): CustomPropertyDetails {
 
     walk(ast, (node: CssNode) => {
         if (!isRule(node)) return;
-        if (!hasCustomPropertyExport(node.prelude)) return;
+        const selector = getCustomPropertyExport(node.prelude);
+        if (!selector) return;
 
         Object.assign(result, {
+            selector,
             customProperties: getExports(node.block),
             end: node.loc.end.offset,
             start: node.loc.start.offset,

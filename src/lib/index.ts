@@ -60,9 +60,12 @@ export default function parse(): PreprocessorGroup {
                 const cssExport = findCustomProperties(ast);
                 if (cssExport.start !== undefined) {
                     ({ customProperties } = cssExport);
-                    const export_start = css.content.start + cssExport.start;
-                    const export_end = css.content.start + cssExport.end;
-                    magic_string.remove(export_start, export_end);
+                    if (cssExport.selector === "export") {
+                        const export_start
+                            = css.content.start + cssExport.start;
+                        const export_end = css.content.start + cssExport.end;
+                        magic_string.remove(export_start, export_end);
+                    }
                 }
             }
 
