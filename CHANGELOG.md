@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/kwangure/svelte-docs/compare/v0.3.0...v0.3.1) (2022-02-06)
+
+
+### Bug Fixes
+
+* only strip custom exports ([5396c0f](https://github.com/kwangure/svelte-docs/commit/5396c0fa773cc64a5b893656f5af9be2f44a71a9))
+
 ## [0.3.0](https://github.com/kwangure/svelte-docs/compare/v0.2.0...v0.3.0) (2022-01-07)
 
 
