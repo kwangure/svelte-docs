@@ -5,10 +5,18 @@ import fs from "fs-extra";
 import json from "@rollup/plugin-json";
 import node from "@rollup/plugin-node-resolve";
 import path from "path";
+import pkg from "./package.json";
 import typescript from "@rollup/plugin-typescript";
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
+
+const external = [].concat(
+    Object.keys(pkg.dependencies || {}),
+    Object.keys(pkg.peerDependencies || {}),
+    Object.keys(process.binding("natives")),
+    ["typescript", "svelte2tsx"],
+);
 
 const DEV = Boolean(process.env.ROLLUP_WATCH);
 
@@ -33,6 +41,7 @@ export default [
             chunkFileNames: "chunks/[name]-[hash].js",
             sourcemap: false,
         },
+        external: (id) => external.includes(id),
         plugins: [
             remove(),
             node(),
