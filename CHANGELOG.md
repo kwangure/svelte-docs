@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.2](https://github.com/kwangure/svelte-docs/compare/v0.3.1...v0.3.2) (2022-06-10)
+
+
+### Bug Fixes
+
+* make svelte peer dependency ([c4f39c2](https://github.com/kwangure/svelte-docs/commit/c4f39c29b4463fe5c565a1bbc2c51ae22ffe5b66))
+
 ### [0.3.1](https://github.com/kwangure/svelte-docs/compare/v0.3.0...v0.3.1) (2022-02-06)
 
 
