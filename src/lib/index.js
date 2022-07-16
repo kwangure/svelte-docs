@@ -1,37 +1,12 @@
 import * as svelte from "svelte/compiler";
-import { capitalize, getName } from "./util";
-import { CustomPropertyDoc, findCustomProperties, parseCssDoc } from "./css";
-import { ExportDoc, findExportedVars, getJsDoc } from "./javscript";
-import { findDescription, findSlots, getSlotDocs, SlotDoc } from "./html";
+import { capitalize, getName } from "./util.js";
+import { findCustomProperties, parseCssDoc } from "./css.js";
+import { findDescription, findSlots, getSlotDocs } from "./html.js";
+import { findExportedVars, getJsDoc } from "./javscript";
 import MagicString from "magic-string";
 import parser from "css-tree/lib/parser";
-import type { PreprocessorGroup } from "svelte/types/compiler/preprocess";
 
-const styleRegExp = /(?:<\s*style[^>]*>)([^<]+)(?:<\/\s*style\s*>)/;
-
-export type { CustomPropertyDoc as CSSPropertyDoc, ExportDoc, SlotDoc };
-
-export interface Docs {
-    /** The defined custom properties in a document */
-    customProperties: CustomPropertyDoc[],
-
-    /** The text description of the component */
-    description: string,
-
-    /** The exported variables in the `<script context="module"/>` tag */
-    exports: ExportDoc[],
-
-    /** The name of the component */
-    name: string,
-
-    /** The exported variables in the regular `<script/>` tag */
-    props: ExportDoc[],
-
-    /** The slots in markup */
-    slots: SlotDoc[]
-}
-
-export default function parse(): PreprocessorGroup {
+export default function parse() {
     const s = JSON.stringify;
     return {
         markup(input) {
@@ -69,7 +44,7 @@ export default function parse(): PreprocessorGroup {
                 }
             }
 
-            const docs: Docs = {
+            const docs = {
                 name: capitalize(getName(filename)),
                 slots: getSlotDocs(slots),
                 description,

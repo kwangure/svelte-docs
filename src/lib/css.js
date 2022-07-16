@@ -1,28 +1,9 @@
 import * as comment from "comment-parser/es6";
-import type {
-    Block,
-    CssNode,
-    Declaration,
-    ListItem,
-    PseudoClassSelector,
-    Raw,
-    Rule,
-    StyleSheet,
-    Value,
-} from "css-tree";
-import { Doc, getDocs } from "./comment";
-import { findReverse } from "./util";
+import { findReverse } from "./util.js";
+import { getDocs } from "./comment.js";
 import walk from "css-tree/lib/walker";
 
-export type CustomPropertyDoc = {
-    cssDoc: Doc;
-    property: string;
-    value: string;
-}
-
-export function parseCssDoc(
-    customProperties: CustomProperty[],
-): CustomPropertyDoc[] {
+export function parseCssDoc(customProperties) {
     return customProperties.map(function useClosestJsDoc(property) {
         const { comments, ...rest } = property;
         const value = findReverse(comments, (c) => c.startsWith("/**"));
@@ -32,28 +13,15 @@ export function parseCssDoc(
     });
 }
 
-interface CustomProperty {
-    comments: string[];
-    property: string;
-    value: string;
-}
-
-interface CustomPropertyDetails {
-    customProperties: CustomProperty[],
-    end?: number;
-    selector?: string;
-    start?: number;
-}
-
-function isRule(node: CssNode): node is Rule {
+function isRule(node) {
     return node.type === "Rule";
 }
 
-function isPseudoSelector(node: CssNode): node is PseudoClassSelector {
+function isPseudoSelector(node) {
     return node.type === "PseudoClassSelector";
 }
 
-function isDeclaration(node: CssNode): node is Declaration {
+function isDeclaration(node) {
     return node.type === "Declaration";
 }
 
@@ -68,7 +36,7 @@ function getCustomPropertyExport(prelude) {
     return exportSelector;
 }
 
-function getValue(node: Value | Raw): string {
+function getValue(node) {
     if (node.type === "Raw") {
         return node.value;
     }
@@ -76,8 +44,8 @@ function getValue(node: Value | Raw): string {
     return "";
 }
 
-function getComments(node: ListItem<CssNode>) {
-    const comments: string[] = [];
+function getComments(node) {
+    const comments = [];
 
     while (node !== null && node.data.type === "Comment") {
         comments.push(`/*${node.data.value}*/`);
@@ -87,9 +55,9 @@ function getComments(node: ListItem<CssNode>) {
     return comments;
 }
 
-function getExports(block: Block): CustomProperty[] {
-    const customProperties: CustomProperty[] = [];
-    walk(block, (node, parent: ListItem<CssNode>) => {
+function getExports(block) {
+    const customProperties = [];
+    walk(block, (node, parent) => {
         if (isDeclaration(node) && node.property.startsWith("--")) {
             customProperties.push({
                 property: node.property,
@@ -101,12 +69,12 @@ function getExports(block: Block): CustomProperty[] {
     return customProperties;
 }
 
-export function findCustomProperties(ast: StyleSheet): CustomPropertyDetails {
-    const result: CustomPropertyDetails = {
+export function findCustomProperties(ast) {
+    const result = {
         customProperties: [],
     };
 
-    walk(ast, (node: CssNode) => {
+    walk(ast, (node) => {
         if (!isRule(node)) return;
         const selector = getCustomPropertyExport(node.prelude);
         if (!selector) return;

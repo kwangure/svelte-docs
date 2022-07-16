@@ -1,42 +1,12 @@
 import * as comment from "comment-parser/es6";
 import * as svelte from "svelte/compiler";
-import type {
-    BaseNode,
-    Comment,
-    ExportAllDeclaration,
-    ExportDefaultDeclaration,
-    ExportNamedDeclaration,
-    ExportSpecifier,
-    // eslint-disable-next-line import/no-unresolved
-} from "estree";
-import { Doc, getDocs } from "./comment";
-import { error } from "./util";
-import type { Script } from "svelte/types/compiler/interfaces";
+import { error } from "./util.js";
+import { getDocs } from "./comment.js";
 
-type Export = ExportAllDeclaration
-| ExportDefaultDeclaration
-| ExportNamedDeclaration
-| ExportSpecifier
-
-type ParsedExportDoc = {
-    name: string;
-    kind: string;
-    comments: Comment[];
-    optional: boolean;
-}
-
-export type ExportDoc = {
-    name: string;
-    kind: string;
-    comments: Comment[];
-    optional: boolean;
-    jsDoc: Doc;
-}
-
-export function getJsDoc(variables: ParsedExportDoc[]): ExportDoc[] {
+export function getJsDoc(variables) {
     return variables.map(function useClosestJsDoc(variable) {
         const { comments = [], ...rest } = variable;
-        for (let i = comments.length -1; i >= 0; i--) {
+        for (let i = comments.length - 1; i >= 0; i--) {
             const { type, value } = comments[i];
             if (type === "Block" && value.startsWith("*")) {
                 Object.assign(rest, {
@@ -45,11 +15,11 @@ export function getJsDoc(variables: ParsedExportDoc[]): ExportDoc[] {
                 break;
             }
         }
-        return rest as ExportDoc;
+        return rest;
     });
 }
 
-function extractExport(node: Export): ParsedExportDoc {
+function extractExport(node) {
     const variable = {};
     if (node.type === "ExportNamedDeclaration") {
         if (node.declaration) {
@@ -66,7 +36,6 @@ function extractExport(node: Export): ParsedExportDoc {
                 // TODO: Handle different kinds of declarations;
                 Object.assign(variable, {
                     kind: node.declaration.kind,
-                    // @ts-expect-error assume `Identifier` for now
                     name: declaration.id.name,
                     comments: node.leadingComments,
                 });
@@ -76,17 +45,16 @@ function extractExport(node: Export): ParsedExportDoc {
                 if (declaration.init) {
                     Object.assign(variable, {
                         optional: true,
-                        // @ts-expect-error handle simple assignments only for now
                         value: declaration.init.value,
                     });
-                // e.g export let prop;
+                    // e.g export let prop;
                 } else {
                     Object.assign(variable, {
                         optional: false,
                     });
                 }
 
-            // e.g export function propFunc(value) { return value; }
+                // e.g export function propFunc(value) { return value; }
             } else if (node.declaration.type === "FunctionDeclaration") {
                 Object.assign(variable, {
                     kind: "function",
@@ -97,10 +65,10 @@ function extractExport(node: Export): ParsedExportDoc {
                 console.log("Handle \"node.declaration\" that is not \
 \"VariableDeclaration\"");
             }
-        /* e.g
-            let propName;
-            export { propName as prop };
-        */
+            /* e.g
+                let propName;
+                export { propName as prop };
+            */
         } else {
             /* e.g
                 let propName1;
@@ -125,15 +93,15 @@ function extractExport(node: Export): ParsedExportDoc {
         console.log("Handle documenting Nodes that are not \
 \"ExportNamedDeclaration\"");
     }
-    return variable as ParsedExportDoc;
+    return variable;
 }
 
-export function isExport(node: BaseNode): node is Export {
+export function isExport(node) {
     return (/^Export/).test(node.type);
 }
 
-export function findExportedVars(ast: Script): ParsedExportDoc[] {
-    const variables: ParsedExportDoc[] = [];
+export function findExportedVars(ast) {
+    const variables = [];
 
     if (ast) {
         svelte.walk(ast, {

@@ -1,5 +1,4 @@
 import commonjs from "@rollup/plugin-commonjs";
-import dts from "rollup-plugin-dts";
 import { fileURLToPath } from "url";
 import fs from "fs-extra";
 import json from "@rollup/plugin-json";
@@ -34,7 +33,7 @@ function remove(options = {}) {
 export default [
     {
         input: [
-            "src/lib/index.ts",
+            "src/lib/index.js",
         ],
         output: {
             dir: "dist",
@@ -55,21 +54,5 @@ export default [
             if (warning.code === "THIS_IS_UNDEFINED" && (/node_modules\/comment-parser/).test(warning.id)) return;
             warn(warning);
         },
-    },
-    {
-        input: [
-            "dist/dts/index.d.ts",
-        ],
-        output: {
-            dir: "dist",
-            chunkFileNames: "chunks/[name]-[hash].d.ts",
-        },
-        plugins: [
-            dts(),
-            remove({
-                hook: "writeBundle",
-                dir: "dist/dts",
-            }),
-        ],
     },
 ];
