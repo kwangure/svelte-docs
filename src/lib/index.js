@@ -3,23 +3,37 @@ import { capitalize, getName } from "./util.js";
 import { findCustomProperties, parseCssDoc } from "./css.js";
 import { findDescription, findSlots, getSlotDocs } from "./html.js";
 import { findExportedVars, getJsDoc } from "./javscript";
+import fs from "fs";
 import MagicString from "magic-string";
 import parser from "css-tree/lib/parser";
+import path from "path";
+
+const DOCS_QUERY_RE = /.*(?=:docs)\b/;
+const docsImport = (id) => DOCS_QUERY_RE.exec(id);
 
 export default function parse() {
-    const s = JSON.stringify;
     return {
-        markup(input) {
-            const docs_regex = /export +const +docs *= *true *;*/;
-            const { filename, content } = input;
+        enforce: "pre",
+        resolveId(id, importer) {
+            if (docsImport(id)) {
+                const dir = path.dirname(importer);
+                return path.join(dir, id);
+            }
+        },
+        load(id) {
+            const match = docsImport(id);
+            if (match) {
+                const [filepath] = match;
+                return fs.readFileSync(filepath, "utf-8");
+            }
+        },
+        transform(code, id) {
+            const match = docsImport(id);
+            if (!match) return;
+            const [filepath] = match;
 
-            const { html, instance, module, css } = svelte.parse(content);
-            if (!module) return;
-
-            const magic_string = new MagicString(content);
-            const module_string = magic_string.slice(module.start, module.end);
-            const docs_variable = docs_regex.exec(module_string);
-            if (!docs_variable) return;
+            const { html, instance, module, css } = svelte.parse(code);
+            const magic_string = new MagicString(code);
 
             const description = findDescription(html);
             const slots = findSlots(html);
@@ -28,7 +42,7 @@ export default function parse() {
 
             let customProperties = [];
             if (css) {
-                const css_string = magic_string
+                const css_string = code
                     .slice(css.content.start, css.content.end);
                 // Use different css-tree parser since Svelte's ignores comments
                 const ast = parser(css_string, { positions: true });
@@ -45,7 +59,7 @@ export default function parse() {
             }
 
             const docs = {
-                name: capitalize(getName(filename)),
+                name: capitalize(getName(filepath)),
                 slots: getSlotDocs(slots),
                 description,
                 props: getJsDoc(props),
@@ -53,17 +67,8 @@ export default function parse() {
                 customProperties: parseCssDoc(customProperties),
             };
 
-            // Stringify twice to escape strings inside first string.
-            const docs_string = `export const docs = JSON.parse(${s(s(docs))});`;
-
-            const { 0: { length }, index } = docs_variable;
-            const docs_start = module.start + index;
-            const docs_end = module.start + index + length;
-            magic_string.overwrite(docs_start, docs_end, docs_string);
-
             return {
-                code: magic_string.toString(),
-                map: magic_string.generateMap(),
+                code: `export default ${JSON.stringify(docs)};`,
             };
         },
     };
