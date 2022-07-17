@@ -4,7 +4,7 @@ import { findCustomProperties, parseCssDoc } from "./css.js";
 import { findDescription, findSlots, getSlotDocs } from "./html.js";
 import { findExportedVars, getJsDoc } from "./javscript";
 import fs from "fs";
-import MagicString from "magic-string";
+import { locationFromOffset } from "./location.js";
 import parser from "css-tree/lib/parser";
 import path from "path";
 
@@ -33,7 +33,6 @@ export default function parse() {
             const [filepath] = match;
 
             const { html, instance, module, css } = svelte.parse(code);
-            const magic_string = new MagicString(code);
 
             const description = findDescription(html);
             const slots = findSlots(html);
@@ -45,23 +44,18 @@ export default function parse() {
                 const css_string = code
                     .slice(css.content.start, css.content.end);
                 // Use different css-tree parser since Svelte's ignores comments
-                const ast = parser(css_string, { positions: true });
-                const cssExport = findCustomProperties(ast);
-                if (cssExport.start !== undefined) {
-                    ({ customProperties } = cssExport);
-                    if (cssExport.selector === "export") {
-                        const export_start
-                            = css.content.start + cssExport.start;
-                        const export_end = css.content.start + cssExport.end;
-                        magic_string.remove(export_start, export_end);
-                    }
-                }
+                const ast = parser(css_string, {
+                    ...locationFromOffset(code, css.content.start),
+                    positions: true,
+                });
+                customProperties = findCustomProperties(ast);
             }
 
             const docs = {
                 name: capitalize(getName(filepath)),
                 slots: getSlotDocs(slots),
                 description,
+                workingDirectoryFilepath: filepath.replace(new RegExp(`^${process.cwd()}/`), ""),
                 props: getJsDoc(props),
                 exports: getJsDoc(exports),
                 customProperties: parseCssDoc(customProperties),

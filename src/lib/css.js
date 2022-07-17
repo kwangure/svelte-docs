@@ -1,4 +1,5 @@
 import * as comment from "comment-parser/es6";
+import cssProperties from "mdn-data/css/properties.json";
 import { findReverse } from "./util.js";
 import { getDocs } from "./comment.js";
 import walk from "css-tree/lib/walker";
@@ -13,35 +14,22 @@ export function parseCssDoc(customProperties) {
     });
 }
 
-function isRule(node) {
-    return node.type === "Rule";
-}
-
-function isPseudoSelector(node) {
-    return node.type === "PseudoClassSelector";
+function isIdentifier(node) {
+    return node.type === "Identifier";
 }
 
 function isDeclaration(node) {
     return node.type === "Declaration";
 }
 
-const allowed_pseudoselectors = new Set(["root", "host", "export"]);
-function getCustomPropertyExport(prelude) {
+function getCustomProperty(value) {
     let exportSelector = "";
-    walk(prelude, (node) => {
-        if (isPseudoSelector(node) && allowed_pseudoselectors.has(node.name)) {
+    walk(value, (node) => {
+        if (isIdentifier(node) && node.name.startsWith("--")) {
             exportSelector = node.name;
         }
     });
     return exportSelector;
-}
-
-function getValue(node) {
-    if (node.type === "Raw") {
-        return node.value;
-    }
-    // TODO: Do we need to handle `Value`?
-    return "";
 }
 
 function getComments(node) {
@@ -55,37 +43,30 @@ function getComments(node) {
     return comments;
 }
 
-function getExports(block) {
-    const customProperties = [];
-    walk(block, (node, parent) => {
-        if (isDeclaration(node) && node.property.startsWith("--")) {
-            customProperties.push({
-                property: node.property,
-                value: getValue(node.value),
-                comments: getComments(parent.prev),
-            });
-        }
-    });
-    return customProperties;
-}
-
 export function findCustomProperties(ast) {
-    const result = {
-        customProperties: [],
-    };
+    const customProperties = [];
 
-    walk(ast, (node) => {
-        if (!isRule(node)) return;
-        const selector = getCustomPropertyExport(node.prelude);
-        if (!selector) return;
+    walk(ast, (node, parent) => {
+        if (!isDeclaration(node)) return;
+        const { loc: { end, start }, property, value } = node;
+        // Custom property declaration
+        if (property.startsWith("--")) return;
+        const customProperty = getCustomProperty(value);
+        if (!customProperty) return;
 
-        Object.assign(result, {
-            selector,
-            customProperties: getExports(node.block),
-            end: node.loc.end.offset,
-            start: node.loc.start.offset,
+        const comments = getComments(parent.prev);
+        const { syntax, mdn_url: mdnUrl } = cssProperties[property];
+        customProperties.push({
+            comments,
+            customProperty,
+            end,
+            location:
+            mdnUrl,
+            property,
+            start,
+            syntax,
         });
     });
 
-    return result;
+    return customProperties;
 }
