@@ -1,33 +1,30 @@
 # Svelte Documentation Parser
-A preprocessor to generate JSON documentation for Svelte components.
+A Vite plugin to generate JSON documentation for Svelte components.
 
 ## Install
 ```bash
-npm install @kwangure/svelte-docs
+npm install -D @kwangure/svelte-docs
 ```
 
 ## Usage
 ```javascript
-// svelte.config.js
-import docs from "@kwangure/svelte-docs";
+// vite.config.js
+import docs from '@kwangure/svelte-docs';
 export default {
-    preprocess: [
-        ...,
-        docs, // Expects a valid Svelte file. Put as last preprocessor.
-    ]
-}
+    plugins: [docs()],
+};
 ```
 
 ## Output
 
 | Feature            | Description                                                |
-|--------------------|------------------------------------------------------------|
-| `name`             | Component's name                                           |
-| `slots`            | Component's slots                                          |
-| `description`      | Component's description                                    |
-| `props`            | Exported values in the standard `<script>` tag             |
-| `exports`          | Exported values in the `<script context="module">` tag     |
-| `customProperties` | A list of custom properties defined in the `<style>` tag   |
+|--------------------|--------------------------------------------------------------------|
+| `name`             | Component's name                                                   |
+| `slots`            | Component's slots                                                  |
+| `description`      | Component's description                                            |
+| `props`            | Exported values in the standard `<script>` tag                     |
+| `exports`          | Exported values in the `<script context="module">` tag             |
+| `customProperties` | A list of custom properties used as a value in the `<style>` tag   |
 
 ## Documentation Parsing
 
