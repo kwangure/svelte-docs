@@ -1,5 +1,5 @@
 # Svelte Documentation Parser
-A Vite plugin to generate JSON documentation for Svelte components.
+Generate JSON documentation for Svelte components.
 
 ## Install
 ```bash
@@ -7,12 +7,30 @@ npm install -D @kwangure/svelte-docs
 ```
 
 ## Usage
+### As a plugin
 ```javascript
 // vite.config.js
-import docs from '@kwangure/svelte-docs';
+import { plugin as docs } from '@kwangure/svelte-docs';
 export default {
     plugins: [docs()],
 };
+
+// docs.js
+import docs as './component.svelte:docs';
+
+console.log({ docs });
+```
+
+### As a a parser
+```javascript
+// parse.js
+import { parse } from '@kwangure/svelte-docs';
+
+const filepath = path.resolve('./component.svelte');
+const code = fs.readFileSync(filepath);
+const docs = parse(code, { filepath });
+
+console.log({ docs });
 ```
 
 ## Output
