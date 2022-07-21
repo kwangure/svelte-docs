@@ -16,8 +16,30 @@ export default function parse() {
         enforce: "pre",
         resolveId(id, importer) {
             if (docsImport(id)) {
-                const dir = path.dirname(importer);
-                return path.join(dir, id);
+                /**
+                 * Vite dev mode?
+                 * id: '/path/component.svelte:docs'
+                 * importer: '/home/user/project/index.html'
+                 */
+                if (importer?.endsWith(".html")) {
+                    const dir = path.dirname(importer);
+                    return path.join(dir, id);
+                // eslint-disable-next-line brace-style
+                }
+                /**
+                 * JS Import
+                 * id: './component.svelte:docs'
+                 * importer: '/home/user/project/path/docs.js'
+                 */
+                else if (id.startsWith("./")) {
+                    const dir = path.dirname(importer);
+                    return path.resolve(dir, id);
+                }
+
+                /**
+                 * Somebody else resolved it (e.g resolve.alias)
+                 */
+                return id;
             }
         },
         load(id) {
