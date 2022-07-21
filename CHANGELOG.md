@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/kwangure/svelte-docs/compare/v0.4.0...v0.4.1) (2022-07-21)
+
+
+### Features
+
+* expose docs-parsing function ([d29b0c9](https://github.com/kwangure/svelte-docs/commit/d29b0c9c1657512a9b91aec3834cbc151da16a92))
+
+
+### Bug Fixes
+
+* resolve relative & absolute imports correctly ([fedcd85](https://github.com/kwangure/svelte-docs/commit/fedcd856fc6e8a741a23c5145fcc02794c389145))
+
 ## [0.4.0](https://github.com/kwangure/svelte-docs/compare/v0.3.2...v0.4.0) (2022-07-17)
 
 
