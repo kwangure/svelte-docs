@@ -18,7 +18,7 @@ export function plugin() {
                      */
                     const dir = path.dirname(importer);
                     return path.join(dir, id);
-                } else if (id.startsWith("./")) {
+                } else if (id.startsWith(".")) {
                     /**
                      * We probably got here via JS import
                      * id: './component.svelte:docs'
