@@ -1,8 +1,9 @@
-import * as comment from "comment-parser/es6";
-import cssProperties from "mdn-data/css/properties.json";
+import * as comment from "comment-parser";
+// @ts-ignore
+import cssProperties from "mdn-data/css/properties.json" assert {type: 'json'};
 import { findReverse } from "./util.js";
 import { getDocs } from "./comment.js";
-import walk from "css-tree/lib/walker";
+import { walk } from "css-tree";
 
 export function parseCssDoc(customProperties) {
     return customProperties.map(function useClosestJsDoc(property) {

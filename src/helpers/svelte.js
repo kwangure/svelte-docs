@@ -1,4 +1,4 @@
-import * as comment from "comment-parser/es6";
+import * as comment from "comment-parser";
 import * as svelte from "svelte/compiler";
 import { getDocs } from "./comment.js";
 

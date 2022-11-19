@@ -1,7 +1,7 @@
-import { css } from "./parse/css";
+import { css } from "./parse/css.js";
 import fs from "fs";
 import path from "path";
-import { svelte } from "./parse/svelte";
+import { svelte } from "./parse/svelte.js";
 
 const DOCS_QUERY_RE = /.*(?=:docs)\b/;
 const docsImport = (id) => DOCS_QUERY_RE.exec(id);

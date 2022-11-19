@@ -1,11 +1,11 @@
 import { capitalize, getName } from "../helpers/util.js";
 import { findCustomProperties, parseCssDoc } from "../helpers/css.js";
 import { findDescription, findSlots, getSlotDocs } from "../helpers/svelte.js";
-import { findExportedVars, getJsDoc } from "../helpers/javscript";
+import { findExportedVars, getJsDoc } from "../helpers/javscript.js";
 import { dataToEsm } from "@rollup/pluginutils";
 import { locationFromOffset } from "../helpers/location.js";
 import { parse } from "svelte/compiler";
-import parser from "css-tree/lib/parser";
+import { parse as parseCss } from "css-tree";
 
 export function svelte(code, options) {
     const { filepath } = options;
@@ -22,7 +22,7 @@ export function svelte(code, options) {
         const css_string = code
             .slice(css.content.start, css.content.end);
         // Use different css-tree parser since Svelte's ignores comments
-        const ast = parser(css_string, {
+        const ast = parseCss(css_string, {
             ...locationFromOffset(code, css.content.start),
             positions: true,
         });

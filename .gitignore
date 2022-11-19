@@ -1,8 +1,6 @@
 .DS_Store
 
 node_modules/
-build/
-dist/
 
 # `npm run pack` files
 *.tgz
