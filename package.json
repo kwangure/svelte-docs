@@ -16,8 +16,7 @@
         "check": "svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
         "lint": "eslint . --fix",
-        "release-candidate": "standard-version -a --prerelease rc && npm publish --tag rc && git push --follow-tags origin master",
-        "release": "standard-version -a && npm publish && git push --follow-tags origin master"
+        "release": "release-it"
     },
     "dependencies": {
         "@rollup/plugin-json": "^4.1.0",
@@ -37,6 +36,7 @@
         "css-tree": "github:kwangure/csstree",
         "eslint": "^8.5.0",
         "fs-extra": "^10.0.0",
+        "release-it": "^15.5.0",
         "rollup": "^2.62.0",
         "rollup-plugin-dts": "^3.0.2",
         "standard-version": "^9.3.0",
