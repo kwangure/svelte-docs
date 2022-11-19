@@ -3,6 +3,7 @@ import { capitalize, getName } from "./util.js";
 import { findCustomProperties, parseCssDoc } from "./css.js";
 import { findDescription, findSlots, getSlotDocs } from "./html.js";
 import { findExportedVars, getJsDoc } from "./javscript";
+import { dataToEsm } from "@rollup/pluginutils";
 import { locationFromOffset } from "./location.js";
 import parser from "css-tree/lib/parser";
 
@@ -39,6 +40,6 @@ export function parse(code, options) {
     };
 
     return {
-        code: `export default ${JSON.stringify(docs)};`,
+        code: dataToEsm(docs),
     };
 }

@@ -31,6 +31,7 @@
         "@rollup/plugin-commonjs": "^21.0.1",
         "@rollup/plugin-node-resolve": "^13.1.1",
         "@rollup/plugin-typescript": "^8.2.5",
+        "@rollup/pluginutils": "^5.0.2",
         "@types/css-tree": "^1.0.7",
         "@typescript-eslint/eslint-plugin": "^5.8.1",
         "css-tree": "github:kwangure/csstree",
