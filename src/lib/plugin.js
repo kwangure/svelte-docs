@@ -1,6 +1,7 @@
+import { css } from "./parse/css";
 import fs from "fs";
-import { parse } from "./parse";
 import path from "path";
+import { svelte } from "./parse/svelte";
 
 const DOCS_QUERY_RE = /.*(?=:docs)\b/;
 const docsImport = (id) => DOCS_QUERY_RE.exec(id);
@@ -46,7 +47,11 @@ export function plugin() {
             if (!match) return;
             const [filepath] = match;
 
-            return parse(code, { filepath });
+            if (filepath.endsWith(".svelte")) {
+                return svelte(code, { filepath });
+            } else if (filepath.endsWith(".css")) {
+                return css(code, { filepath });
+            }
         },
     };
 }
