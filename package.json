@@ -17,14 +17,15 @@
     },
     "dependencies": {
         "comment-parser": "^1.1.5",
-        "css-tree": "github:kwangure/csstree",
+        "css-tree": "^2.2.1",
         "mdn-data": "^2.0.28"
     },
     "devDependencies": {
-        "@kwangure/eslint-config-svelte": "^0.1.21",
-        "@types/css-tree": "^1.0.7",
+        "@kwangure/eslint-config-svelte": "^0.2.5",
+        "@rollup/pluginutils": "^5.0.2",
         "eslint": "^8.5.0",
-        "release-it": "^15.5.0"
+        "release-it": "^15.5.0",
+        "vite": "^3.2.4"
     },
     "files": [
         "./src"

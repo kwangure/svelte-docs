@@ -8,43 +8,43 @@ const F = 12;
 const R = 13;
 
 export function locationFromOffset(source, offset) {
-    const startOffset = source.length > 0 ? isBOM(source.charCodeAt(0)) : 0;
-    let line = 0;
-    let column = 0;
+	const startOffset = source.length > 0 ? isBOM(source.charCodeAt(0)) : 0;
+	let line = 0;
+	let column = 0;
 
-    for (let i = startOffset; i < offset; i++) {
-        const char = source.charCodeAt(i);
-        column++;
+	for (let i = startOffset; i < offset; i++) {
+		const char = source.charCodeAt(i);
+		column++;
 
-        if (char === N || char === R || char === F) {
-            if (char === R && (i+1) < offset && source.charCodeAt(i+1) === N) {
-                i++;
-            }
+		if (char === N || char === R || char === F) {
+			if (char === R && (i+1) < offset && source.charCodeAt(i+1) === N) {
+				i++;
+			}
 
-            line++;
-            column = 1;
-        }
-    }
+			line++;
+			column = 1;
+		}
+	}
 
-    return {
-        offset,
-        line,
-        column,
-    };
+	return {
+		offset,
+		line,
+		column,
+	};
 }
 
 // detect BOM (https://en.wikipedia.org/wiki/Byte_order_mark)
 export function isBOM(code) {
-    // UTF-16BE
-    if (code === 0xFEFF) {
-        return 1;
-    }
+	// UTF-16BE
+	if (code === 0xFEFF) {
+		return 1;
+	}
 
-    // UTF-16LE
-    if (code === 0xFFFE) {
-        return 1;
-    }
+	// UTF-16LE
+	if (code === 0xFFFE) {
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 
